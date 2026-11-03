@@ -1,0 +1,23 @@
+{% extends "scheduling/base.html" %}
+
+{% block title %}Free time{% endblock %}
+
+{% block content %}
+  <h1>Free time</h1>
+  <p class="muted">An interviewer can be scheduled only inside one of these windows.</p>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Save free time</button>
+  </form>
+
+  <h2>Saved windows</h2>
+  {% for window in windows %}
+    <article class="card">
+      <p>{{ window.interviewer.username }}</p>
+      <p>{{ window.starts_at }} to {{ window.ends_at }}</p>
+    </article>
+  {% empty %}
+    <p>No free time saved yet.</p>
+  {% endfor %}
+{% endblock %}

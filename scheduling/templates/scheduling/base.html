@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Interview scheduler{% endblock %}</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #1c1915;
+      --muted: #5c564c;
+      --line: #e4dccf;
+      --paper: #f4efe6;
+      --card: #fffdf8;
+      --accent: #9a3412;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Georgia, "Iowan Old Style", serif;
+      color: var(--ink);
+      background: var(--paper);
+    }
+    a { color: var(--accent); }
+    header {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      align-items: center;
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid var(--line);
+      background: var(--card);
+    }
+    nav { display: flex; flex-wrap: wrap; gap: 0.75rem 1rem; align-items: center; }
+    nav form { margin: 0; }
+    main { max-width: 42rem; margin: 0 auto; padding: 1.5rem; }
+    h1 { font-size: 1.8rem; margin: 0 0 1rem; }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      padding: 1rem 1.1rem;
+      margin-bottom: 0.8rem;
+    }
+    .muted { color: var(--muted); }
+    button, .button {
+      font: inherit;
+      background: var(--ink);
+      color: white;
+      border: 0;
+      padding: 0.45rem 0.8rem;
+      text-decoration: none;
+      display: inline-block;
+      cursor: pointer;
+    }
+    label { display: block; margin-top: 0.8rem; }
+    input, select, textarea {
+      font: inherit;
+      width: 100%;
+      padding: 0.4rem;
+      margin-top: 0.25rem;
+    }
+    .errorlist { color: #9f1239; padding-left: 1.1rem; }
+    .message { padding: 0.6rem 0.8rem; margin-bottom: 0.8rem; background: #ecfccb; }
+    .message.error { background: #ffe4e6; }
+  </style>
+</head>
+<body>
+  <header>
+    <a href="{% url 'opening_list' %}">Interview scheduler</a>
+    <nav>
+      <a href="{% url 'opening_list' %}">Openings</a>
+      {% if user.is_authenticated %}
+        <a href="{% url 'opening_create' %}">New opening</a>
+        <a href="{% url 'availability_create' %}">Free time</a>
+        <span>{{ user.username }}</span>
+        <form method="post" action="{% url 'logout' %}">
+          {% csrf_token %}
+          <button type="submit">Log out</button>
+        </form>
+      {% else %}
+        <a href="{% url 'login' %}">Log in</a>
+        <a href="{% url 'register' %}">Register</a>
+      {% endif %}
+    </nav>
+  </header>
+  <main>
+    {% if messages %}
+      {% for message in messages %}
+        <p class="message {% if message.tags == 'error' %}error{% endif %}">{{ message }}</p>
+      {% endfor %}
+    {% endif %}
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

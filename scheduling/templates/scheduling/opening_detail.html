@@ -1,0 +1,29 @@
+{% extends "scheduling/base.html" %}
+
+{% block title %}{{ opening.position }}{% endblock %}
+
+{% block content %}
+  <h1>{{ opening.position }}</h1>
+  <p class="muted">Recruiter: {{ opening.recruiter.username }}</p>
+  <p>{{ opening.description }}</p>
+  <p class="muted">Apply by {{ opening.deadline }}</p>
+
+  {% if can_apply %}
+    <form method="post" action="{% url 'apply' opening.pk %}">
+      {% csrf_token %}
+      <button type="submit">Apply</button>
+    </form>
+  {% elif applied %}
+    <p>You have applied for this opening.</p>
+  {% endif %}
+
+  {% if applications %}
+    <h2>Applications</h2>
+    {% for application in applications %}
+      <article class="card">
+        <p>{{ application.candidate.username }}</p>
+        <a href="{% url 'schedule_interview' application.pk %}">Schedule interview</a>
+      </article>
+    {% endfor %}
+  {% endif %}
+{% endblock %}
