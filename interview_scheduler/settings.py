@@ -20,7 +20,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-k6%(eb-ds=ih@(1ny$%cdv-v7&u6yn%py3&t&0sk2&tk$sp8n9'
+SECRET_KEY = 'django-insecure-j$$(*8$h^7z7xc=a@aex*&gv4^hmu4tyxsmc4d4**gvb*)00go'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -126,11 +126,3 @@ MAILERS = {
         'BACKEND': 'django.core.mail.backends.console.EmailBackend',
     },
 }
-
-AUTH_USER_MODEL = "scheduling.User"
-
-# Names match the URL names in scheduling/urls.py.
-LOGIN_URL = 'login'
-LOGIN_REDIRECT_URL = 'opening_list'
-LOGOUT_REDIRECT_URL = 'opening_list'
-

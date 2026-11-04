@@ -1,12 +1,14 @@
 # Interview Scheduler
 
-Schedule interviews around job openings, applications, and interviewer free time.
+Version 1. Schedule an interview when the named interviewers are free, then see every saved interview in a table.
 
 ## Description
 
-Interview Scheduler is a small Django web app for hiring. The home page lists every job opening, newest first. Each row shows the recruiter, position, description, and the last day to apply. Open a row for that one opening. A candidate presses Apply to create an application. The recruiter for that opening sees the applicants and can schedule an interview. An interviewer saves free time first. An interview can be saved only when that person is free for the whole slot, and saving removes that time from their window. A missing id shows a 404 page. The same records are also available in Django admin after you create an admin login.
+Interview Scheduler is a small Django app. The home page is a form with interviewers, candidate, date, start time, and end time. Date is chosen from month, day, and year menus. Start time and end time are chosen in 30-minute steps. Several interviewers go in one field, separated by commas.
 
-Register asks for a username, email, and password. A new account starts as a candidate. Recruiter and interviewer accounts are created in admin, where the role is chosen. A job opening needs a recruiter, a position, a description, and a deadline. Free time and interviews need a start and an end, and the end must be after the start.
+Each interviewer must already have one free window, stored as an interview slot. The interview start and end must sit inside that window, and the end must be after the start. Saving the interview keeps the row and moves each person's free window forward to the interview end. The view page lists every interview with the same columns as the form: interviewers, candidate, date, start time, and end time.
+
+Interviewers are added in Django admin, not on the home page. Create an admin account, open Interview slots, and save a name with a start time and an end time. The name on the form must match that slot exactly.
 
 ## Getting Started
 
@@ -31,6 +33,7 @@ python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 python manage.py migrate
+python manage.py createsuperuser
 ```
 
 Windows:
@@ -42,9 +45,10 @@ python -m venv .venv
 .venv\Scripts\activate
 pip install -r requirements.txt
 python manage.py migrate
+python manage.py createsuperuser
 ```
 
-`migrate` creates `db.sqlite3` in the project folder. That file is local. It is listed in `.gitignore`, so it is not part of the clone. No project files need to be edited before the first run.
+`migrate` creates `db.sqlite3` in the project folder. That file is local. It is listed in `.gitignore`, so it is not part of the clone.
 
 ### Executing program
 
@@ -55,19 +59,18 @@ python manage.py migrate
 python manage.py runserver
 ```
 
-3. Open http://127.0.0.1:8000/.
-4. Press Register, create an account, and log in.
-5. Open an opening and press Apply, or use New opening and Free time from the header.
-
-Optional admin site:
-
-```bash
-python manage.py createsuperuser
-```
-
-Then open http://127.0.0.1:8000/admin/ and sign in with that account. Under Scheduling, then Users, add a user and set Role to Recruiter or Interviewer.
+3. Open http://127.0.0.1:8000/admin/ and sign in with the superuser you created.
+4. Under Scheduling, add an Interview slot for each interviewer: name, start time, and end time.
+5. Open http://127.0.0.1:8000/, fill in the form, and press Save.
+6. The view page at http://127.0.0.1:8000/view/ shows the saved interviews.
 
 Stop the server with Ctrl+C.
+
+To change the admin password later:
+
+```bash
+python manage.py changepassword <username>
+```
 
 ## Authors
 
@@ -75,5 +78,7 @@ Stop the server with Ctrl+C.
 
 ## Version History
 
-- 0.1
-  - Initial release
+- 1.0
+  - Home form to schedule an interview against interviewer free windows
+  - View page table of saved interviews
+  - Admin pages for interviews and interview slots
