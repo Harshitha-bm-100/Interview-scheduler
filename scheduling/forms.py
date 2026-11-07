@@ -35,28 +35,25 @@ class InterviewForm(forms.ModelForm):
         if end_time <= start_time:
             raise forms.ValidationError('End time must be after start time.')
 
-        for name in interviewers.split(','):
-            name = name.strip()
-            if not name:
-                continue
-
-            # The slot has no date. Look it up by name only.
-            if not InterviewSlot.objects.filter(Interviewer=name).exists():
-                raise forms.ValidationError('No availability row for ' + name)
-            slot = InterviewSlot.objects.get(Interviewer=name)
+        for interviewer in interviewers.all():
+            slot = InterviewSlot.objects.filter(interviewer=interviewer).first()
+            if slot is None:
+                raise forms.ValidationError('No availability row for ' + str(interviewer))
             if slot.start_time > start_time or slot.end_time < end_time:
-                raise forms.ValidationError('Interviewer ' + name + ' is not free during that time.')
+                raise forms.ValidationError('Interviewer ' + str(interviewer) + ' is not free during that time.')
 
-            # Taken times for this day are other Interview rows with the same date.
             already_booked = Interview.objects.filter(
                 date=interview_date,
                 start_time__lt=end_time,
                 end_time__gt=start_time,
+                interviewers=interviewer,
             )
-            for interview in already_booked:
-                booked_names = [part.strip() for part in interview.interviewers.split(',')]
-                if name in booked_names:
-                    raise forms.ValidationError(
-                        'Interviewer ' + name + ' is already booked during that time on that date.'
-                    )
+            # When editing, don't treat this interview's existing row as a conflict.
+            if self.instance.pk:
+                already_booked = already_booked.exclude(pk=self.instance.pk)
+            # Reject the form if any other booking overlaps this interview's time.
+            if already_booked.exists():
+                raise forms.ValidationError(
+                    'Interviewer ' + str(interviewer) + ' is already booked during that time on that date.'
+                )
         return cleaned

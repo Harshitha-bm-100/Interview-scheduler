@@ -26,7 +26,11 @@
     <tbody>
       {% for interview in interviews %}
       <tr>
-        <td>{{ interview.interviewers }}</td>
+        <td>
+          {% for interviewer in interview.interviewers.all %}
+            {{ interviewer.name }}{% if not forloop.last %}, {% endif %}
+          {% endfor %}
+        </td>
         <td>{{ interview.candidate }}</td>
         <td>{{ interview.date }}</td>
         <td>{{ interview.start_time }}</td>
