@@ -36,6 +36,9 @@
         <td>{{ interview.start_time }}</td>
         <td>{{ interview.end_time }}</td>
         <td>
+          <form method="get" action="{% url 'edit' interview.id %}">
+            <button type="submit">Edit</button>
+          </form>
           <form method="post" action="{% url 'delete' interview.id %}">
             {% csrf_token %}
             <button type="submit">Delete</button>
