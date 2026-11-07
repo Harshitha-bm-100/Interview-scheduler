@@ -20,6 +20,7 @@
         <th>Date</th>
         <th>Start time</th>
         <th>End time</th>
+        <th></th>
       </tr>
     </thead>
     <tbody>
@@ -30,10 +31,16 @@
         <td>{{ interview.date }}</td>
         <td>{{ interview.start_time }}</td>
         <td>{{ interview.end_time }}</td>
+        <td>
+          <form method="post" action="{% url 'delete' interview.id %}">
+            {% csrf_token %}
+            <button type="submit">Delete</button>
+          </form>
+        </td>
       </tr>
       {% empty %}
       <tr>
-        <td colspan="5">No interviews yet.</td>
+        <td colspan="6">No interviews yet.</td>
       </tr>
       {% endfor %}
     </tbody>

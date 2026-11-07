@@ -1,4 +1,4 @@
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
 
 from .forms import InterviewForm
 from .models import Interview
@@ -22,3 +22,10 @@ def View(request):
     return render(request, 'scheduling/view_page.html', {
         'interviews': Interview.objects.all(),
     })
+
+
+def Delete(request, interview_id):
+    if request.method == 'POST':
+        interview = get_object_or_404(Interview, id=interview_id)
+        interview.delete()
+    return redirect('view')
