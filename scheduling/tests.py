@@ -1,4 +1,5 @@
 from datetime import time
+import json
 
 from django.test import TestCase
 
@@ -57,3 +58,63 @@ class InterviewFormTests(TestCase):
 
         self.assertEqual(str(interview), 'Charles - 2026-01-03')
         self.assertEqual(str(self.interviewer.slot), 'Ada')
+
+
+class InterviewAPITests(TestCase):
+    def setUp(self):
+        self.interviewer = Interviewer.objects.create(name='Ada')
+        InterviewSlot.objects.create(
+            interviewer=self.interviewer,
+            start_time=time(9, 0),
+            end_time=time(17, 0),
+        )
+        self.payload = {
+            'interviewers': [self.interviewer.pk],
+            'candidate': 'Charles',
+            'date': '2026-01-03',
+            'start_time': '10:30',
+            'end_time': '11:30',
+        }
+
+    def post_json(self, url, payload):
+        return self.client.post(
+            url,
+            data=json.dumps(payload),
+            content_type='application/json',
+        )
+
+    def test_list_interviews_returns_json(self):
+        response = self.post_json('/api/interviews/', self.payload)
+        self.assertEqual(response.status_code, 201)
+
+        response = self.client.get('/api/interviews/')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()[0]['candidate'], 'Charles')
+        self.assertEqual(response.json()[0]['date'], '2026-01-03')
+
+    def test_create_uses_shared_booking_validation(self):
+        self.assertEqual(self.post_json('/api/interviews/', self.payload).status_code, 201)
+
+        overlapping_payload = {**self.payload, 'candidate': 'Diana'}
+        response = self.post_json('/api/interviews/', overlapping_payload)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(Interview.objects.count(), 1)
+
+    def test_invalid_json_and_invalid_fields_return_bad_request(self):
+        response = self.client.post(
+            '/api/interviews/',
+            data='{not json',
+            content_type='application/json',
+        )
+        self.assertEqual(response.status_code, 400)
+
+        response = self.post_json('/api/interviews/', {'candidate': 'Incomplete'})
+        self.assertEqual(response.status_code, 400)
+
+    def test_delete_returns_no_content(self):
+        response = self.post_json('/api/interviews/', self.payload)
+        interview_id = response.json()['id']
+
+        response = self.client.post(f'/api/interviews/{interview_id}/delete/')
+        self.assertEqual(response.status_code, 204)
+        self.assertEqual(Interview.objects.count(), 0)
