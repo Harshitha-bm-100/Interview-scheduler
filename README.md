@@ -1,14 +1,34 @@
 # Interview Scheduler
 
-Version 2. Schedule an interview when the named interviewers are free, including on a later date, then see every saved interview in a table.
+Version 1. Schedule an interview with one or more interviewers, then see, edit, or delete the saved interviews.
 
 ## Description
 
-Interview Scheduler is a small Django app. The home page is a form with interviewers, candidate, date, start time, and end time. Date is chosen from month, day, and year menus. Start time and end time are chosen in 30-minute steps. Several interviewers go in one field, separated by commas.
+Interview Scheduler is a small Django app for booking interviews.
 
-Each interviewer must already have one free window, stored as an interview slot. That row has no date: the same hours apply every day, and saving an interview does not change it. The interview start and end must sit inside that window, and the end must be after the start. A time is taken only by the saved interview row. The form loads interviews for the chosen date and rejects the booking when that person already overlaps those times. Another date starts from the same free window. The view page lists every interview with the same columns as the form: interviewers, candidate, date, start time, and end time.
+People and their hours are set up in Django admin:
 
-Interviewers are added in Django admin, not on the home page. Create an admin account, open Interview slots, and save a name with a start time and an end time. The name on the form must match that slot exactly.
+- An **interviewer** is one person, stored by name.
+- An **interview slot** is that person's free window. Each person has one slot. It has a start time and an end time, and no date, so the same hours apply every day. Saving an interview does not change the slot.
+
+The home page is a form:
+
+- Interviewers are a scrolling list of checkboxes. Select one or more people.
+- Candidate is a name.
+- Date is chosen from month, day, and year menus.
+- Start time and end time are chosen in 30-minute steps.
+
+Save is accepted only when the booking fits:
+
+- The end time is after the start time.
+- Every selected interviewer has a slot, and the interview sits inside that daily window.
+- None of those people already has an overlapping interview on that date.
+
+A booking uses the slot as the daily window and stores the taken time on the interview. The same hours can be booked again on another date. Editing an interview does not treat that interview as a conflict with itself.
+
+The view page lists interviews in a table: interviewers, candidate, date, start time, and end time. The list is ordered by date and start time, with 10 rows per page. A signed-in user can edit or delete a row. The edit page uses the same form as the home page, with the current people left checked.
+
+Scheduling, editing, and deleting require a signed-in user. The view page can be opened without signing in.
 
 ## Getting Started
 
@@ -60,9 +80,9 @@ python manage.py runserver
 ```
 
 3. Open http://127.0.0.1:8000/admin/ and sign in with the superuser you created.
-4. Under Scheduling, add an Interview slot for each interviewer: name, start time, and end time.
-5. Open http://127.0.0.1:8000/, fill in the form, and press Save.
-6. The view page at http://127.0.0.1:8000/view/ shows the saved interviews.
+4. Under Scheduling, add each interviewer, then add one interview slot for that person with a start time and an end time.
+5. Open http://127.0.0.1:8000/ and sign in. Check one or more interviewers, fill in the rest of the form, and press Save.
+6. The view page at http://127.0.0.1:8000/view/ shows the saved interviews. Use Edit or Delete on a row to change or remove it.
 
 Stop the server with Ctrl+C.
 
@@ -78,10 +98,8 @@ python manage.py changepassword <username>
 
 ## Version History
 
-- 2.0
-  - Version 1 saved an interview and then moved that person's slot start time forward to the interview end. The slot has no date, so the move applied to every day. Booking the same hours on a later date failed, because the free window had already been used up.
-  - Version 2 leaves the slot as the daily free window. The saved interview is the record of the taken time. The form checks other interviews with the same date and rejects an overlap for that person. A different date can use the original hours.
 - 1.0
-  - Home form to schedule an interview against interviewer free windows
-  - View page table of saved interviews
-  - Admin pages for interviews and interview slots
+  - Home form to schedule an interview with one or more interviewers
+  - Daily free window per interviewer, stored as an interview slot
+  - View page of saved interviews, with edit and delete
+  - Admin pages for interviewers, interview slots, and interviews

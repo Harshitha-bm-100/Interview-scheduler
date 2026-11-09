@@ -16,6 +16,7 @@ class InterviewForm(forms.ModelForm):
         model = Interview
         fields = ['interviewers', 'candidate', 'date', 'start_time', 'end_time']
         widgets = {
+            'interviewers': forms.CheckboxSelectMultiple(),
             'date': forms.SelectDateWidget(empty_label=('Year', 'Month', 'Day')),
             'start_time': forms.Select(choices=TIME_CHOICES),
             'end_time': forms.Select(choices=TIME_CHOICES),
