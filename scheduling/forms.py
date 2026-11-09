@@ -2,7 +2,7 @@ from datetime import time
 
 from django import forms
 
-from .models import Interview, InterviewSlot
+from .models import Interview, Interviewer
 
 TIME_CHOICES = [('', '---------')] + [
     (time(hour, minute).strftime('%H:%M'), f'{hour:02d}:{minute:02d}')
@@ -28,32 +28,42 @@ class InterviewForm(forms.ModelForm):
         start_time = cleaned.get('start_time')
         end_time = cleaned.get('end_time')
 
-        # A missing field is already reported by the form. Stop here.
-        if not interviewers or interview_date is None or start_time is None or end_time is None:
-            return cleaned
+        self.instance.check_can_book(interviewers, interview_date, start_time, end_time)
 
-        if end_time <= start_time:
-            raise forms.ValidationError('End time must be after start time.')
+        return cleaned
 
-        for interviewer in interviewers.all():
-            slot = InterviewSlot.objects.filter(interviewer=interviewer).first()
-            if slot is None:
-                raise forms.ValidationError('No availability row for ' + str(interviewer))
-            if slot.start_time > start_time or slot.end_time < end_time:
-                raise forms.ValidationError('Interviewer ' + str(interviewer) + ' is not free during that time.')
 
-            already_booked = Interview.objects.filter(
+class InterviewAPIForm(forms.ModelForm):
+    class Meta:
+        model = Interview
+        fields = [
+            'interviewers',
+            'candidate',
+            'date',
+            'start_time',
+            'end_time',
+        ]
+
+    def clean(self):
+        cleaned = super().clean()
+
+        interviewers = cleaned.get('interviewers')
+        interview_date = cleaned.get('date')
+        start_time = cleaned.get('start_time')
+        end_time = cleaned.get('end_time')
+
+        if interviewers and interview_date and start_time and end_time:
+            booking = Interview(
+                candidate=cleaned.get('candidate', ''),
                 date=interview_date,
-                start_time__lt=end_time,
-                end_time__gt=start_time,
-                interviewers=interviewer,
+                start_time=start_time,
+                end_time=end_time,
             )
-            # When editing, don't treat this interview's existing row as a conflict.
-            if self.instance.pk:
-                already_booked = already_booked.exclude(pk=self.instance.pk)
-            # Reject the form if any other booking overlaps this interview's time.
-            if already_booked.exists():
-                raise forms.ValidationError(
-                    'Interviewer ' + str(interviewer) + ' is already booked during that time on that date.'
-                )
+            booking.check_can_book(
+                interviewers,
+                interview_date,
+                start_time,
+                end_time,
+            )
+
         return cleaned

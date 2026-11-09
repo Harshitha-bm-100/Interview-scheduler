@@ -51,6 +51,7 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'interview_scheduler.urls'
+LOGIN_URL = 'login'
 
 TEMPLATES = [
     {
